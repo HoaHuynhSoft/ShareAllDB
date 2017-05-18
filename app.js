@@ -10,27 +10,6 @@ Item =require('./model/item.js');
 Cart =require('./model/cart.js');
 Order =require('./model/order.js');
 Field=require('./model/field.js');
-/*var path = require("path");
-var multer  =   require('multer');
-let mkdirp = require ("mkdirp");
-var storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-    let newDestination = path.resolve("/imageForder");
-    mkdirp.sync(newDestination);
-    cb (null, newDestination);
-  },
-  filename: (req, file, cb) => {
-    let getFileExt = (fileName) => {
-        var fileExt = fileName.split(".");
-        if ( fileExt.length === 1 || ( fileExt[0] === "" && fileExt.length === 2 ) ) {
-            return "";
-        }
-        return fileExt.pop();
-    };
-    cb(null, req.body.filename); // + "_" + Date.now() + "." + getFileExt(file.originalname));
-  }
-});
-var upload = multer({ storage: storage }).single('file');*/
 
 // ket noi toi mongoose
 //mongoose.connect('mongodb://localhost:27017/ugasdb')
@@ -39,10 +18,20 @@ mongoose.connection.on('connected', function (err) {
   console.log('Connected to DB');
 });
 var db = mongoose.connection;
+var basicAuth = require('express-basic-auth');
+app.use(basicAuth( { authorizer: myAuthorizer } ))
+ 
+function myAuthorizer(username, password) {
+	
+    if(username==="abc" && password==="123"){
+		console.log(username);
+		return true;
+	}
+}
+
 app.get('/',function (req, res) {
     res.send('Hello world! yoyo');
-})
-
+});
 // User
 // Get all user
 app.get('/api/users', function(req, res){
@@ -672,9 +661,19 @@ app.get('/api/getshipperdatareport/:_id',function(req,res){
 		
 	});
 })
-var j = schedule.scheduleJob('03 * * * *', function(){
+var j = schedule.scheduleJob('17 * * * *', function(){
   console.log('The answer to life, the universe, and everything!');
+  User.getUsers(function(err,users){
+	  if(err){
+		  throw err;
+	  }
+	  users.forEach(function(user,index){
+		  console.log(user.UserName);
+	  });
+
+  })
 });
-//End Order
+
+
 app.listen(3000);
 console.log ('Running on port 3000...');
