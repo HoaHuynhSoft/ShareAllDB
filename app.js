@@ -11,6 +11,10 @@ Cart =require('./model/cart.js');
 Order =require('./model/order.js');
 Field=require('./model/field.js');
 
+// code to upload to server
+app.set('port', (process.env.PORT || 5000));
+
+
 // ket noi toi mongoose
 //mongoose.connect('mongodb://localhost:27017/ugasdb')
 mongoose.connect('mongodb://makakura:0985554820@ds023064.mlab.com:23064/bpartner');
@@ -674,6 +678,12 @@ var j = schedule.scheduleJob('17 * * * *', function(){
   })
 });
 
+// code run local
+//app.listen(3000);
+//console.log ('Running on port 3000...');
 
-app.listen(3000);
-console.log ('Running on port 3000...');
+
+//code run on server
+app.listen(app.get('port'), function() {
+  console.log('Node app is running on port', app.get('port'));
+});
