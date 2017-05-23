@@ -677,13 +677,4 @@ var j = schedule.scheduleJob('17 * * * *', function(){
 
   })
 });
-
-// code run local
-//app.listen(3000);
-//console.log ('Running on port 3000...');
-
-
-//code run on server
-app.listen(app.get('port'), function() {
-  console.log('Node app is running on port', app.get('port'));
-});
+app.listen(process.env.PORT || 3000);
