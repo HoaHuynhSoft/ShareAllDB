@@ -74,21 +74,26 @@ module.exports.updateOrderStatus = function(id, order, options, callback){
 	var query = {_id: id};
 	var myDate=new Date();
 	var inputDate = new Date(myDate.toISOString());
-	console.log(myDate+" "+inputDate);
-	if(oder.Status==3){
+	//console.log(myDate+" "+inputDate);
+	if(order.Status==3){
 		var update = {
 			Status: order.Status,
 			Shipper:order.Shipper
 		}
 	}
-	if(oder.Status==4){
+	if(order.Status==4){
 		var update = {
 			Status: order.Status,
 			Shipper:order.Shipper,
 			OrderSuccessDate: inputDate
 		}
 	}
-	
+	else{
+		var update = {
+			Status: order.Status
+		}
+	}
+	console.log("ssss"+order.Status);
 	Order.findOneAndUpdate(query, update, options, callback);
 }
 // Update Order
@@ -165,5 +170,8 @@ module.exports.getOrderByCurrentMonth=function(callback){
 	endDay.setSeconds(59);
 	endDay.setDate(31);
 	Order.find({OrderDate: {$gte: beginDay,$lte:endDay }},callback);
+}
+module.exports.getUserWaitingOrder=function(userID,callback){
+	Order.find({OwnerId: userID,Status: 1}, callback);
 }
 

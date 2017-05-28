@@ -27,7 +27,7 @@ app.use(basicAuth( { authorizer: myAuthorizer } ))
  
 function myAuthorizer(username, password) {
 	
-    if(username==="abc" && password==="123"){
+    if(username==="user" && password==="123456"){
 		console.log(username);
 		return true;
 	}
@@ -138,11 +138,39 @@ app.put('/api/items/:_id', function(req, res){
         });
         req.on('end', function () {
 			var id = req.params._id;
-			var item = JSON.parse(jsonString)
-			Item.updateItem(id, item, {}, function(err, item){
+			var postedItem = JSON.parse(jsonString)
+			console.log("item input");
+			console.log(postedItem);
+			Item.updateItem(id, postedItem, {}, function(err, item){
 				if(err){
-					throw err;
+					res.status(500).send({ error: "Lỗi khi cập nhập thông tin sản phẩm." });
 				}
+
+				Cart.getCarts( function(err, carts){
+					if(err){
+						res.status(500).send({ error: err });
+					}
+					carts.forEach(function(cart,index){
+						if(cart.OrderDetails.length>0){
+							cart.OrderDetails.forEach(function(detail,i){
+								if(detail.Item._id==id){
+									console.log(detail.Item.name);
+									cart.Total=cart.Total-(detail.kilogramType*detail.numOfKilogramType*detail.Item.price);
+									cart.Total=cart.Total+(detail.kilogramType*detail.numOfKilogramType*postedItem.price);
+									postedItem.price=parseInt(postedItem.price);
+									detail.Item=postedItem;
+									console.log(detail.Item);
+								}
+							});
+							Cart.updateCart(cart._id, cart, {}, function(err, cart){
+								if(err){
+									console.log(err);
+									res.status(500).send({ error: "Lỗi khi cập nhập thông tin sản phẩm trong giỏ hàng người tiêu dùng." });
+								}
+							});
+						}
+					});
+				});
 				res.json(item);
 			});
         });
@@ -257,42 +285,53 @@ app.post('/api/orders', function(req, res){
         });
         req.on('end', function () {
 			var order = JSON.parse(jsonString);
-			Order.addOrder(order, function(err, order){
-				if(err){
-					throw err;
+			Order.getUserWaitingOrder(order.OwnerId,function(err,orders){
+				if(orders.length>1){
+					console.log(orders.length);
+					
+					res.status(400).send({ error: "Bạn vẫn còn "+orders.length+" đơn hàng đang chờ, vui lòng đợi các đơn hàng trước được xác nhận" });
+					//res.json({'err':"Bạn vẫn còn đơn hàng đang chờ, vui lòng đợi các đơn hàng trước được xác nhận" });
 				}
-				res.json(order);
-				// Push Nor
-				var requestify = require('requestify');
-				requestify.request('https://fcm.googleapis.com/fcm/send', {
-					method: 'POST',
-					body: {
-						'notification':{
-							'title':'Thông báo', 
-							'body':'Có đơn hang mới',   
-							'sound':'default',  
-							'click_action':'FCM_PLUGIN_ACTIVITY',   
-							'icon':'fcm_push_icon'   
-						},
-						'data':{
-							'type': '1',
-							'id':order._id,
-						},
-							'to':'/topics/host', 
-							'priority':'high',  
-							'restricted_package_name':''  
-					},
-					headers: {
-						'Content-Type': 'application/json',
-						'Authorization': 'key=AIzaSyAglKU9k9G4W8TZmo5N9DmLslQdaMsm1G8'
-					},
-					dataType: 'json'        
-				})
-				.then(function(response) {
-					console.log(JSON.stringify(response));
-				});
-				// End push nor
-			});
+				else{
+					Order.addOrder(order, function(err, order){
+						if(err){
+							throw err;
+						}
+						res.json(order);
+						// Push Nor
+						var requestify = require('requestify');
+						requestify.request('https://fcm.googleapis.com/fcm/send', {
+							method: 'POST',
+							body: {
+								'notification':{
+									'title':'Thông báo', 
+									'body':'Có đơn hang mới',   
+									'sound':'default',  
+									'click_action':'FCM_PLUGIN_ACTIVITY',   
+									'icon':'fcm_push_icon'   
+								},
+								'data':{
+									'type': '1',
+									'id':order._id,
+								},
+									'to':'/topics/host', 
+									'priority':'high',  
+									'restricted_package_name':''  
+							},
+							headers: {
+								'Content-Type': 'application/json',
+								'Authorization': 'key=AIzaSyAglKU9k9G4W8TZmo5N9DmLslQdaMsm1G8'
+							},
+							dataType: 'json'        
+						})
+						.then(function(response) {
+							console.log(JSON.stringify(response));
+						});
+						// End push nor
+					});
+				}
+			})
+			
         });
 	
 });
