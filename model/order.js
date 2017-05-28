@@ -75,11 +75,20 @@ module.exports.updateOrderStatus = function(id, order, options, callback){
 	var myDate=new Date();
 	var inputDate = new Date(myDate.toISOString());
 	console.log(myDate+" "+inputDate);
-	var update = {
-        Status: order.Status,
-		Shipper:order.Shipper,
-		OrderSuccessDate: inputDate
+	if(oder.Status==3){
+		var update = {
+			Status: order.Status,
+			Shipper:order.Shipper
+		}
 	}
+	if(oder.Status==4){
+		var update = {
+			Status: order.Status,
+			Shipper:order.Shipper,
+			OrderSuccessDate: inputDate
+		}
+	}
+	
 	Order.findOneAndUpdate(query, update, options, callback);
 }
 // Update Order

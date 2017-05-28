@@ -16,7 +16,7 @@ app.set('port', (process.env.PORT || 5000));
 
 
 // ket noi toi mongoose
-//mongoose.connect('mongodb://localhost:27017/ugasdb')
+//mongoose.connect('mongodb://localhost:27017/uGạodb')
 mongoose.connect('mongodb://makakura:0985554820@ds023064.mlab.com:23064/bpartner');
 mongoose.connection.on('connected', function (err) {
   console.log('Connected to DB');
@@ -324,7 +324,7 @@ app.put('/api/orders/:_id', function(req, res){
 						body: {
 							'notification':{
 								'title':'Thông báo', 
-								'body':'Gas của bạn đang được chuyển đi, sẽ tới trong vòng 30 phút, nhớ giữ liên lạc nha ;)',   
+								'body':'Gạo của bạn đang được chuyển đi, sẽ tới trong vòng 30 phút, nhớ giữ liên lạc nha;',   
 								'sound':'default',  
 								'click_action':'FCM_PLUGIN_ACTIVITY',   
 								'icon':'fcm_push_icon'   
@@ -463,7 +463,7 @@ app.put('/api/ordersStatus/:_id', function(req, res){
 						body: {
 							'notification':{
 								'title':'Thông báo', 
-								'body':'Gas của bạn đang được chuyển đi, sẽ tới trong vòng 30 phút, nhớ giữ liên lạc nha ;)',   
+								'body':'Gạo của bạn đang được chuyển đi, sẽ tới trong vòng 30 phút, nhớ giữ liên lạc nha ;)',   
 								'sound':'default',  
 								'click_action':'FCM_PLUGIN_ACTIVITY',   
 								'icon':'fcm_push_icon'   
@@ -665,7 +665,7 @@ app.get('/api/getshipperdatareport/:_id',function(req,res){
 		
 	});
 })
-var j = schedule.scheduleJob('17 * * * *', function(){
+var j = schedule.scheduleJob('13 * * * *', function(){
   console.log('The answer to life, the universe, and everything!');
   User.getUsers(function(err,users){
 	  if(err){
@@ -673,6 +673,50 @@ var j = schedule.scheduleJob('17 * * * *', function(){
 	  }
 	  users.forEach(function(user,index){
 		  console.log(user.UserName);
+		  if(user.DayRemain<=5){
+			pushToken=user.PushToken;
+			console.log(pushToken);
+			// Push Nor
+			var requestify = require('requestify');
+			requestify.request('https://fcm.googleapis.com/fcm/send', {
+				method: 'POST',
+				body: {
+					'notification':{
+						'title':'Thông báo', 
+						'body':'Gạo của bạn săp hết, Đặt gạo ngay bạn nhé.',   
+						'sound':'default',  
+						'click_action':'FCM_PLUGIN_ACTIVITY',   
+						'icon':'fcm_push_icon'   
+					},
+					'data':{
+						'type': '3',
+						'id':'',
+					},
+						'to': pushToken, 
+						'priority':'high',  
+						'restricted_package_name':''  
+				},
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': 'key=AIzaSyAglKU9k9G4W8TZmo5N9DmLslQdaMsm1G8'
+				},
+				dataType: 'json'        
+			})
+			.then(function(response) {
+				console.log(JSON.stringify(response));
+			});
+			// End push nor
+		  }
+		  if(user.DayRemain>0){
+			user.DayRemain--;
+			User.updateUser(user._id, user, {}, function(err, user){
+					if(err){
+						throw err;
+					}
+					console.log(user.DayRemain);
+					//res.json(user);
+				});
+			}	  
 	  });
 
   })
