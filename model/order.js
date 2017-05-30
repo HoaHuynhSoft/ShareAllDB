@@ -12,7 +12,8 @@ var orderSchema = mongoose.Schema({
     Address: String,
 	Note: String,
 	OrderDate: Date,
-    OrderSuccessDate: Date
+    OrderSuccessDate: Date,
+	
 });
 
 var Order = module.exports = mongoose.model('Order', orderSchema);
@@ -113,7 +114,8 @@ module.exports.updateOrder = function(id, order, options, callback){
 		Address: order.Address,
 		Note: order.Note,
 		OrderDate: order.OrderDate,
-        OrderSuccessDate: order.OrderSuccessDate
+        OrderSuccessDate: order.OrderSuccessDate,
+		ItemChange:order.ItemChange,
 	}
 	Order.findOneAndUpdate(query, update, options, callback);
 }

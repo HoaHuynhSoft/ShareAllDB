@@ -10,11 +10,8 @@ Item =require('./model/item.js');
 Cart =require('./model/cart.js');
 Order =require('./model/order.js');
 Field=require('./model/field.js');
-
 // code to upload to server
 app.set('port', (process.env.PORT || 5000));
-
-
 // ket noi toi mongoose
 //mongoose.connect('mongodb://localhost:27017/uGạodb')
 mongoose.connect('mongodb://makakura:0985554820@ds023064.mlab.com:23064/bpartner');
@@ -58,6 +55,14 @@ app.get('/api/staffs', function(req, res){
 // get user by name
 app.get('/api/users/:_id', function(req, res){
 	User.getUserByUserName(req.params._id, function(err, user){
+		if(err){
+			throw err;
+		}
+		res.json(user);
+	});
+});
+app.get('/api/userId/:_id', function(req, res){
+	User.getUserById(req.params._id, function(err, user){
 		if(err){
 			throw err;
 		}
@@ -160,6 +165,7 @@ app.put('/api/items/:_id', function(req, res){
 									postedItem.price=parseInt(postedItem.price);
 									detail.Item=postedItem;
 									console.log(detail.Item);
+									cart.ItemChange=true;
 								}
 							});
 							Cart.updateCart(cart._id, cart, {}, function(err, cart){
@@ -202,6 +208,7 @@ app.post('/api/carts', function(req, res){
         });
         req.on('end', function () {
 			var cart = JSON.parse(jsonString);
+			console.log(cart);
 			Cart.addCart(cart, function(err, cart){
 				if(err){
 					throw err;
@@ -704,7 +711,7 @@ app.get('/api/getshipperdatareport/:_id',function(req,res){
 		
 	});
 })
-var j = schedule.scheduleJob('13 * * * *', function(){
+var j = schedule.scheduleJob('* * * * 1 *', function(){
   console.log('The answer to life, the universe, and everything!');
   User.getUsers(function(err,users){
 	  if(err){
