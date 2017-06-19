@@ -20,10 +20,9 @@ mongoose.connection.on('connected', function (err) {
 });
 var db = mongoose.connection;
 var basicAuth = require('express-basic-auth');
-app.use(basicAuth( { authorizer: myAuthorizer } ))
+app.use(basicAuth({ authorizer: myAuthorizer }))
  
-function myAuthorizer(username, password) {
-	
+function myAuthorizer(username, password) {	
     if(username==="user" && password==="123456"){
 		console.log(username);
 		return true;
@@ -360,40 +359,43 @@ app.put('/api/orders/:_id', function(req, res){
 				res.json(orderTemp);
 			});
 			if(orderTemp.Status ==3){
-				User.getUserById(orderTemp.OwnerId, function(err, user){
-					pushToken=user.PushToken;
-					console.log(pushToken);
-					// Push Nor
-					var requestify = require('requestify');
-					requestify.request('https://fcm.googleapis.com/fcm/send', {
-						method: 'POST',
-						body: {
-							'notification':{
-								'title':'Thông báo', 
-								'body':'Gạo của bạn đang được chuyển đi, sẽ tới trong vòng 30 phút, nhớ giữ liên lạc nha;',   
-								'sound':'default',  
-								'click_action':'FCM_PLUGIN_ACTIVITY',   
-								'icon':'fcm_push_icon'   
+				if(orderTemp.OwnerId!="Default_User"){
+					User.getUserById(orderTemp.OwnerId, function(err, user){
+						pushToken=user.PushToken;
+						console.log(pushToken);
+						// Push Nor
+						var requestify = require('requestify');
+						requestify.request('https://fcm.googleapis.com/fcm/send', {
+							method: 'POST',
+							body: {
+								'notification':{
+									'title':'Thông báo', 
+									'body':'Gạo của bạn đang được chuyển đi, sẽ tới trong vòng 30 phút, nhớ giữ liên lạc nha;',   
+									'sound':'default',  
+									'click_action':'FCM_PLUGIN_ACTIVITY',   
+									'icon':'fcm_push_icon'   
+								},
+								'data':{
+									'type': '1',
+									'id':orderTemp._id,
+								},
+									'to': pushToken, 
+									'priority':'high',  
+									'restricted_package_name':''  
 							},
-							'data':{
-								'type': '1',
-								'id':orderTemp._id,
+							headers: {
+								'Content-Type': 'application/json',
+								'Authorization': 'key=AIzaSyAglKU9k9G4W8TZmo5N9DmLslQdaMsm1G8'
 							},
-								'to': pushToken, 
-								'priority':'high',  
-								'restricted_package_name':''  
-						},
-						headers: {
-							'Content-Type': 'application/json',
-							'Authorization': 'key=AIzaSyAglKU9k9G4W8TZmo5N9DmLslQdaMsm1G8'
-						},
-						dataType: 'json'        
-					})
-					.then(function(response) {
-						console.log(JSON.stringify(response));
-					});
+							dataType: 'json'        
+						})
+						.then(function(response) {
+							console.log(JSON.stringify(response));
+						});
 					// End push nor
-				});
+					});
+				}
+				
 				
 			}
 			else  if(orderTemp.Status == 2){
@@ -428,40 +430,43 @@ app.put('/api/orders/:_id', function(req, res){
 				});
 			}
 			else if(orderTemp.Status == 0){
-				User.getUserById(orderTemp.OwnerId, function(err, user){
-					pushToken=user.PushToken;
-					console.log(pushToken);
-					// Push Nor
-					var requestify = require('requestify');
-					requestify.request('https://fcm.googleapis.com/fcm/send', {
-						method: 'POST',
-						body: {
-							'notification':{
-								'title':'Thông báo', 
-								'body':'Đơn hàng của bạn đã bị hủy, liên hệ 01649051057 để được hỗ trợ!',   
-								'sound':'default',  
-								'click_action':'FCM_PLUGIN_ACTIVITY',   
-								'icon':'fcm_push_icon'   
+				if(orderTemp.OwnerId!="Default_User"){
+					User.getUserById(orderTemp.OwnerId, function(err, user){
+						pushToken=user.PushToken;
+						console.log(pushToken);
+						// Push Nor
+						var requestify = require('requestify');
+						requestify.request('https://fcm.googleapis.com/fcm/send', {
+							method: 'POST',
+							body: {
+								'notification':{
+									'title':'Thông báo', 
+									'body':'Đơn hàng của bạn đã bị hủy, liên hệ 01649051057 để được hỗ trợ!',   
+									'sound':'default',  
+									'click_action':'FCM_PLUGIN_ACTIVITY',   
+									'icon':'fcm_push_icon'   
+								},
+								'data':{
+									'type': '1',
+									'id':orderTemp._id,
+								},
+									'to': pushToken, 
+									'priority':'high',  
+									'restricted_package_name':''  
 							},
-							'data':{
-								'type': '1',
-								'id':orderTemp._id,
+							headers: {
+								'Content-Type': 'application/json',
+								'Authorization': 'key=AIzaSyAglKU9k9G4W8TZmo5N9DmLslQdaMsm1G8'
 							},
-								'to': pushToken, 
-								'priority':'high',  
-								'restricted_package_name':''  
-						},
-						headers: {
-							'Content-Type': 'application/json',
-							'Authorization': 'key=AIzaSyAglKU9k9G4W8TZmo5N9DmLslQdaMsm1G8'
-						},
-						dataType: 'json'        
-					})
-					.then(function(response) {
-						console.log(JSON.stringify(response));
-					});
+							dataType: 'json'        
+						})
+						.then(function(response) {
+							console.log(JSON.stringify(response));
+						});
 					// End push nor
-				});
+					});
+				}
+				
 				
 			}
         });
@@ -499,40 +504,43 @@ app.put('/api/ordersStatus/:_id', function(req, res){
 				res.json(orderTemp);
 			});
 			if(orderTemp.Status ==3){
-				User.getUserById(orderTemp.OwnerId, function(err, user){
-					pushToken=user.PushToken;
-					console.log(pushToken);
-					// Push Nor
-					var requestify = require('requestify');
-					requestify.request('https://fcm.googleapis.com/fcm/send', {
-						method: 'POST',
-						body: {
-							'notification':{
-								'title':'Thông báo', 
-								'body':'Gạo của bạn đang được chuyển đi, sẽ tới trong vòng 30 phút, nhớ giữ liên lạc nha ;)',   
-								'sound':'default',  
-								'click_action':'FCM_PLUGIN_ACTIVITY',   
-								'icon':'fcm_push_icon'   
+				if(orderTemp.OwnerId!="Default_User"){
+					User.getUserById(orderTemp.OwnerId, function(err, user){
+						pushToken=user.PushToken;
+						console.log(pushToken);
+						// Push Nor
+						var requestify = require('requestify');
+						requestify.request('https://fcm.googleapis.com/fcm/send', {
+							method: 'POST',
+							body: {
+								'notification':{
+									'title':'Thông báo', 
+									'body':'Gạo của bạn đang được chuyển đi, sẽ tới trong vòng 30 phút, nhớ giữ liên lạc nha ;)',   
+									'sound':'default',  
+									'click_action':'FCM_PLUGIN_ACTIVITY',   
+									'icon':'fcm_push_icon'   
+								},
+								'data':{
+									'type': '1',
+									'id':orderTemp._id,
+								},
+									'to': pushToken, 
+									'priority':'high',  
+									'restricted_package_name':''  
 							},
-							'data':{
-								'type': '1',
-								'id':orderTemp._id,
+							headers: {
+								'Content-Type': 'application/json',
+								'Authorization': 'key=AIzaSyAglKU9k9G4W8TZmo5N9DmLslQdaMsm1G8'
 							},
-								'to': pushToken, 
-								'priority':'high',  
-								'restricted_package_name':''  
-						},
-						headers: {
-							'Content-Type': 'application/json',
-							'Authorization': 'key=AIzaSyAglKU9k9G4W8TZmo5N9DmLslQdaMsm1G8'
-						},
-						dataType: 'json'        
-					})
-					.then(function(response) {
-						console.log(JSON.stringify(response));
+							dataType: 'json'        
+						})
+						.then(function(response) {
+							console.log(JSON.stringify(response));
+						});
+						// End push nor
 					});
-					// End push nor
-				});
+				}
+				
 				
 			}
 			else  if(orderTemp.Status == 2){
@@ -567,40 +575,43 @@ app.put('/api/ordersStatus/:_id', function(req, res){
 				});
 			}
 			else if(orderTemp.Status == 0){
-				User.getUserById(orderTemp.OwnerId, function(err, user){
-					pushToken=user.PushToken;
-					console.log(pushToken);
-					// Push Nor
-					var requestify = require('requestify');
-					requestify.request('https://fcm.googleapis.com/fcm/send', {
-						method: 'POST',
-						body: {
-							'notification':{
-								'title':'Thông báo', 
-								'body':'Đơn hàng của bạn đã bị hủy, liên hệ 01649051057 để được hỗ trợ!',   
-								'sound':'default',  
-								'click_action':'FCM_PLUGIN_ACTIVITY',   
-								'icon':'fcm_push_icon'   
+				if(orderTemp.OwnerId!="Default_User"){
+					User.getUserById(orderTemp.OwnerId, function(err, user){
+						pushToken=user.PushToken;
+						console.log(pushToken);
+						// Push Nor
+						var requestify = require('requestify');
+						requestify.request('https://fcm.googleapis.com/fcm/send', {
+							method: 'POST',
+							body: {
+								'notification':{
+									'title':'Thông báo', 
+									'body':'Đơn hàng của bạn đã bị hủy, liên hệ 01649051057 để được hỗ trợ!',   
+									'sound':'default',  
+									'click_action':'FCM_PLUGIN_ACTIVITY',   
+									'icon':'fcm_push_icon'   
+								},
+								'data':{
+									'type': '1',
+									'id':orderTemp._id,
+								},
+									'to': pushToken, 
+									'priority':'high',  
+									'restricted_package_name':''  
 							},
-							'data':{
-								'type': '1',
-								'id':orderTemp._id,
+							headers: {
+								'Content-Type': 'application/json',
+								'Authorization': 'key=AIzaSyAglKU9k9G4W8TZmo5N9DmLslQdaMsm1G8'
 							},
-								'to': pushToken, 
-								'priority':'high',  
-								'restricted_package_name':''  
-						},
-						headers: {
-							'Content-Type': 'application/json',
-							'Authorization': 'key=AIzaSyAglKU9k9G4W8TZmo5N9DmLslQdaMsm1G8'
-						},
-						dataType: 'json'        
-					})
-					.then(function(response) {
-						console.log(JSON.stringify(response));
+							dataType: 'json'        
+						})
+						.then(function(response) {
+							console.log(JSON.stringify(response));
+						});
+						// End push nor
 					});
-					// End push nor
-				});
+				}
+				
 				
 			}
         });
@@ -689,6 +700,7 @@ app.get('/api/getshipperdatareport/:_id',function(req,res){
 		});
 		Order.getOrderByShipperIdInCurrentDay(req.params._id, function(err, orderInDay){
 			orderInDay.forEach(function(item,index){
+				console.log(item.Status);
 				if(item.Status===4){
 					totalMoneyInDay+=item.Total;
 					numOfDeliveredOrder++;
@@ -729,7 +741,7 @@ var j = schedule.scheduleJob('* * * * 1 *', function(){
 				body: {
 					'notification':{
 						'title':'Thông báo', 
-						'body':'Gạo của bạn săp hết, Đặt gạo ngay bạn nhé.',   
+						'body':'Bạn chỉ còn '+user.DayRemain+', Đặt gạo ngay bạn nhé.',   
 						'sound':'default',  
 						'click_action':'FCM_PLUGIN_ACTIVITY',   
 						'icon':'fcm_push_icon'   
