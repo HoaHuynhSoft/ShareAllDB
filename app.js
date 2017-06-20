@@ -495,125 +495,137 @@ app.put('/api/ordersStatus/:_id', function(req, res){
         req.on('end', function () {
 			var id = req.params._id;
 			var orderTemp = JSON.parse(jsonString);
-			console.log(orderTemp.Status);
+			
 			var pushToken = "";
-			Order.updateOrderStatus(id, orderTemp, {}, function(err, orderTemp){
+			Order.getOrderById(req.params._id, function(err, orderWillUpdate){
 				if(err){
-					throw err;
+					 res.status(500).send('err');
 				}
-				res.json(orderTemp);
+				console.log(orderTemp.Status+"----"+orderWillUpdate.Status);
+				if(orderWillUpdate.Status!=orderTemp.Status){
+					Order.updateOrderStatus(id, orderTemp, {}, function(err, orderTemp){
+						if(err){
+							res.status(500).send('err');
+						}
+						res.json(orderTemp);
+					});
+					if(orderTemp.Status ==3){
+						if(orderTemp.OwnerId!="Default_User"){
+							User.getUserById(orderTemp.OwnerId, function(err, user){
+								pushToken=user.PushToken;
+								console.log(pushToken);
+								// Push Nor
+								var requestify = require('requestify');
+								requestify.request('https://fcm.googleapis.com/fcm/send', {
+									method: 'POST',
+									body: {
+										'notification':{
+											'title':'Thông báo', 
+											'body':'Gạo của bạn đang được chuyển đi, sẽ tới trong vòng 30 phút, nhớ giữ liên lạc nha ;)',   
+											'sound':'default',  
+											'click_action':'FCM_PLUGIN_ACTIVITY',   
+											'icon':'fcm_push_icon'   
+										},
+										'data':{
+											'type': '1',
+											'id':orderTemp._id,
+										},
+											'to': pushToken, 
+											'priority':'high',  
+											'restricted_package_name':''  
+									},
+									headers: {
+										'Content-Type': 'application/json',
+										'Authorization': 'key=AIzaSyAglKU9k9G4W8TZmo5N9DmLslQdaMsm1G8'
+									},
+									dataType: 'json'        
+								})
+								.then(function(response) {
+									console.log(JSON.stringify(response));
+								});
+								// End push nor
+							});
+						}
+						
+						
+					}
+					else  if(orderTemp.Status == 2){
+						console.log("push nor to deliver");
+						var requestify = require('requestify');
+						requestify.request('https://fcm.googleapis.com/fcm/send', {
+							method: 'POST',
+							body: {
+								'notification':{
+									'title':'Thông báo', 
+									'body':'Có đơn hàng mới cần chuyển đi',   
+									'sound':'default',  
+									'click_action':'FCM_PLUGIN_ACTIVITY',   
+									'icon':'fcm_push_icon'   
+								},
+								'data':{
+									'type': '1',
+									'id':orderTemp._id,
+								},
+									'to': '/topics/shipper',
+									'priority':'high',  
+									'restricted_package_name':''  
+							},
+							headers: {
+								'Content-Type': 'application/json',
+								'Authorization': 'key=AIzaSyAglKU9k9G4W8TZmo5N9DmLslQdaMsm1G8'
+							},
+							dataType: 'json'        
+						})
+						.then(function(response) {
+							console.log(JSON.stringify(response));
+						});
+					}
+					else if(orderTemp.Status == 0){
+						if(orderTemp.OwnerId!="Default_User"){
+							User.getUserById(orderTemp.OwnerId, function(err, user){
+								pushToken=user.PushToken;
+								console.log(pushToken);
+								// Push Nor
+								var requestify = require('requestify');
+								requestify.request('https://fcm.googleapis.com/fcm/send', {
+									method: 'POST',
+									body: {
+										'notification':{
+											'title':'Thông báo', 
+											'body':'Đơn hàng của bạn đã bị hủy, liên hệ 01649051057 để được hỗ trợ!',   
+											'sound':'default',  
+											'click_action':'FCM_PLUGIN_ACTIVITY',   
+											'icon':'fcm_push_icon'   
+										},
+										'data':{
+											'type': '1',
+											'id':orderTemp._id,
+										},
+											'to': pushToken, 
+											'priority':'high',  
+											'restricted_package_name':''  
+									},
+									headers: {
+										'Content-Type': 'application/json',
+										'Authorization': 'key=AIzaSyAglKU9k9G4W8TZmo5N9DmLslQdaMsm1G8'
+									},
+									dataType: 'json'        
+								})
+								.then(function(response) {
+									console.log(JSON.stringify(response));
+								});
+								// End push nor
+							});
+						}
+						
+						
+					}
+				}
+				else{
+					res.status(400).send('Order have changed');
+				}
 			});
-			if(orderTemp.Status ==3){
-				if(orderTemp.OwnerId!="Default_User"){
-					User.getUserById(orderTemp.OwnerId, function(err, user){
-						pushToken=user.PushToken;
-						console.log(pushToken);
-						// Push Nor
-						var requestify = require('requestify');
-						requestify.request('https://fcm.googleapis.com/fcm/send', {
-							method: 'POST',
-							body: {
-								'notification':{
-									'title':'Thông báo', 
-									'body':'Gạo của bạn đang được chuyển đi, sẽ tới trong vòng 30 phút, nhớ giữ liên lạc nha ;)',   
-									'sound':'default',  
-									'click_action':'FCM_PLUGIN_ACTIVITY',   
-									'icon':'fcm_push_icon'   
-								},
-								'data':{
-									'type': '1',
-									'id':orderTemp._id,
-								},
-									'to': pushToken, 
-									'priority':'high',  
-									'restricted_package_name':''  
-							},
-							headers: {
-								'Content-Type': 'application/json',
-								'Authorization': 'key=AIzaSyAglKU9k9G4W8TZmo5N9DmLslQdaMsm1G8'
-							},
-							dataType: 'json'        
-						})
-						.then(function(response) {
-							console.log(JSON.stringify(response));
-						});
-						// End push nor
-					});
-				}
-				
-				
-			}
-			else  if(orderTemp.Status == 2){
-				console.log("push nor to deliver");
-				var requestify = require('requestify');
-				requestify.request('https://fcm.googleapis.com/fcm/send', {
-					method: 'POST',
-					body: {
-						'notification':{
-							'title':'Thông báo', 
-							'body':'Có đơn hàng mới cần chuyển đi',   
-							'sound':'default',  
-							'click_action':'FCM_PLUGIN_ACTIVITY',   
-							'icon':'fcm_push_icon'   
-						},
-						'data':{
-							'type': '1',
-							'id':orderTemp._id,
-						},
-							'to': '/topics/shipper',
-							'priority':'high',  
-							'restricted_package_name':''  
-					},
-					headers: {
-						'Content-Type': 'application/json',
-						'Authorization': 'key=AIzaSyAglKU9k9G4W8TZmo5N9DmLslQdaMsm1G8'
-					},
-					dataType: 'json'        
-				})
-				.then(function(response) {
-					console.log(JSON.stringify(response));
-				});
-			}
-			else if(orderTemp.Status == 0){
-				if(orderTemp.OwnerId!="Default_User"){
-					User.getUserById(orderTemp.OwnerId, function(err, user){
-						pushToken=user.PushToken;
-						console.log(pushToken);
-						// Push Nor
-						var requestify = require('requestify');
-						requestify.request('https://fcm.googleapis.com/fcm/send', {
-							method: 'POST',
-							body: {
-								'notification':{
-									'title':'Thông báo', 
-									'body':'Đơn hàng của bạn đã bị hủy, liên hệ 01649051057 để được hỗ trợ!',   
-									'sound':'default',  
-									'click_action':'FCM_PLUGIN_ACTIVITY',   
-									'icon':'fcm_push_icon'   
-								},
-								'data':{
-									'type': '1',
-									'id':orderTemp._id,
-								},
-									'to': pushToken, 
-									'priority':'high',  
-									'restricted_package_name':''  
-							},
-							headers: {
-								'Content-Type': 'application/json',
-								'Authorization': 'key=AIzaSyAglKU9k9G4W8TZmo5N9DmLslQdaMsm1G8'
-							},
-							dataType: 'json'        
-						})
-						.then(function(response) {
-							console.log(JSON.stringify(response));
-						});
-						// End push nor
-					});
-				}
-				
-				
-			}
+			
         });
 
 });
