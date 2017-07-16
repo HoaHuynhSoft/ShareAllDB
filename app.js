@@ -32,6 +32,8 @@ function myAuthorizer(username, password) {
 app.get('/',function (req, res) {
     res.send('Hello world! yoyo');
 });
+
+
 // User
 // Get all user
 app.get('/api/users', function(req, res){
@@ -109,6 +111,8 @@ app.put('/api/users/:_id', function(req, res){
 			});
         });
 });
+
+
 // Item
 //Get all item
 app.get('/api/items', function(req, res){
@@ -119,6 +123,7 @@ app.get('/api/items', function(req, res){
 		res.json(items);
 	});
 });
+//insert new item
 app.post('/api/items',function (req, res, next) {
  var jsonString = '';
         req.on('data', function (data) {
@@ -180,7 +185,9 @@ app.put('/api/items/:_id', function(req, res){
 			});
         });
 });
-// Cart
+
+
+// Cart Apis
 //Get all cart
 app.get('/api/carts', function(req, res){
 	Cart.getCarts(function(err, carts){
@@ -234,8 +241,9 @@ app.put('/api/carts/:_id', function(req, res){
 			});
         });
 });
-// Order
-//Get all order
+
+
+// Order Apis
 app.get('/api/orders', function(req, res){
 	Order.getOrders(function(err, posts){
 		if(err){
@@ -244,7 +252,6 @@ app.get('/api/orders', function(req, res){
 		res.json(posts);
 	});
 });
-// get order 1 by user or 2 by shipperId 3 by confirmed
 app.get('/api/orders/:_flag/:value', function(req, res){
 	var flag = req.params._flag;
 	var value= req.params.value;
@@ -274,7 +281,6 @@ app.get('/api/orders/:_flag/:value', function(req, res){
 	}
 	else throw err;
 });
-// get order by id
 app.get('/api/orders/:_id', function(req, res){
 	Order.getOrderById(req.params._id, function(err, order){
 		if(err){
@@ -283,7 +289,6 @@ app.get('/api/orders/:_id', function(req, res){
 		res.json(order);
 	});
 });
-// add new order
 app.post('/api/orders', function(req, res){
 	var jsonString = '';
         req.on('data', function (data) {
@@ -341,7 +346,6 @@ app.post('/api/orders', function(req, res){
         });
 	
 });
-//update order
 app.put('/api/orders/:_id', function(req, res){
 	var jsonString = '';
         req.on('data', function (data) {
@@ -629,7 +633,6 @@ app.put('/api/ordersStatus/:_id', function(req, res){
         });
 
 });
-// xoa order
 app.delete('/api/orders/:_id', function(req, res){
 	var id = req.params._id;
 	Order.removeOrder(id, function(err, order){
@@ -639,6 +642,9 @@ app.delete('/api/orders/:_id', function(req, res){
 		res.json(order);
 	});
 });
+
+
+//Report Apis
 app.get('/api/GetReportData',function(req,res){
 	var numofWaitingOrder=0;
 	var numOfOrder=0;
@@ -735,6 +741,8 @@ app.get('/api/getshipperdatareport/:_id',function(req,res){
 		
 	});
 })
+
+//Job schedule, auto send notidication to user who had day remind less than 5 days
 var j = schedule.scheduleJob('* * * * 1 *', function(){
   console.log('The answer to life, the universe, and everything!');
   User.getUsers(function(err,users){
