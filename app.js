@@ -596,7 +596,7 @@ app.put('/api/ordersStatus/:_id', function(req, res){
 									body: {
 										'notification':{
 											'title':'Thông báo', 
-											'body':'Đơn hàng của bạn đã bị hủy, liên hệ 01649051057 để được hỗ trợ!',   
+											'body':'Đơn hàng của bạn đã bị hủy, liên hệ đại lý để được hỗ trợ!',   
 											'sound':'default',  
 											'click_action':'FCM_PLUGIN_ACTIVITY',   
 											'icon':'fcm_push_icon'   
