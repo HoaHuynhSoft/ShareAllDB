@@ -743,11 +743,11 @@ app.get('/api/getshipperdatareport/:_id',function(req,res){
 })
 
 //Job schedule, auto send notidication to user who had day remind less than 5 days
-var j = schedule.scheduleJob('* * * * 1 *', function(){
+var j = schedule.scheduleJob('* 30 16 26 7 *', function(){
   console.log('The answer to life, the universe, and everything!');
   User.getUsers(function(err,users){
 	  if(err){
-		  throw err;
+		  res.status(500).send('err');
 	  }
 	  users.forEach(function(user,index){
 		  console.log(user.UserName);
@@ -755,34 +755,37 @@ var j = schedule.scheduleJob('* * * * 1 *', function(){
 			pushToken=user.PushToken;
 			console.log(pushToken);
 			// Push Nor
-			var requestify = require('requestify');
-			requestify.request('https://fcm.googleapis.com/fcm/send', {
-				method: 'POST',
-				body: {
-					'notification':{
-						'title':'Thông báo', 
-						'body':'Bạn chỉ còn '+user.DayRemain+', Đặt gạo ngay bạn nhé.',   
-						'sound':'default',  
-						'click_action':'FCM_PLUGIN_ACTIVITY',   
-						'icon':'fcm_push_icon'   
+			if(pushToken != null){
+				var requestify = require('requestify');
+				requestify.request('https://fcm.googleapis.com/fcm/send', {
+					method: 'POST',
+					body: {
+						'notification':{
+							'title':'Thông báo', 
+							'body':'Bạn chỉ còn '+user.DayRemain+', Đặt gạo ngay bạn nhé.',   
+							'sound':'default',  
+							'click_action':'FCM_PLUGIN_ACTIVITY',   
+							'icon':'fcm_push_icon'   
+						},
+						'data':{
+							'type': '3',
+							'id':'',
+						},
+							'to': pushToken, 
+							'priority':'high',  
+							'restricted_package_name':''  
 					},
-					'data':{
-						'type': '3',
-						'id':'',
+					headers: {
+						'Content-Type': 'application/json',
+						'Authorization': 'key=AIzaSyAglKU9k9G4W8TZmo5N9DmLslQdaMsm1G8'
 					},
-						'to': pushToken, 
-						'priority':'high',  
-						'restricted_package_name':''  
-				},
-				headers: {
-					'Content-Type': 'application/json',
-					'Authorization': 'key=AIzaSyAglKU9k9G4W8TZmo5N9DmLslQdaMsm1G8'
-				},
-				dataType: 'json'        
-			})
-			.then(function(response) {
-				console.log(JSON.stringify(response));
-			});
+					dataType: 'json'        
+				})
+				.then(function(response) {
+					console.log(JSON.stringify(response));
+				});
+			}
+			
 			// End push nor
 		  }
 		  if(user.DayRemain>0){
